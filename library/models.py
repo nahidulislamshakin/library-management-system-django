@@ -16,7 +16,7 @@ class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     classroom = models.CharField(max_length=10)
     branch = models.CharField(max_length=10)
-    roll_no = models.CharField(max_length=3, blank=True)
+    roll_no = models.CharField(max_length=10, blank=True, unique=True)
     phone = models.CharField(max_length=10, blank=True)
     image = models.ImageField(upload_to="", blank=True)
 
@@ -26,8 +26,10 @@ class Student(models.Model):
 
 def expiry():
     return datetime.today() + timedelta(days=14)
+
+
 class IssuedBook(models.Model):
-    student_id = models.CharField(max_length=100, blank=True) 
+    student_id = models.IntegerField( blank=True) 
     isbn = models.CharField(max_length=13)
     issued_date = models.DateField(auto_now=True)
     expiry_date = models.DateField(default=expiry)

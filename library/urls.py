@@ -7,6 +7,8 @@ urlpatterns = [
     path("view_books/", views.view_books, name="view_books"),
     path("view_students/", views.view_students, name="view_students"),
     path("issue_book/", views.issue_book, name="issue_book"),
+    path("delete_issue/<int:pk>", views.delete_issue, name="delete_issue"),
+
     path("view_issued_book/", views.view_issued_book, name="view_issued_book"),
     path("student_issued_books/", views.student_issued_books, name="student_issued_books"),
     path("profile/", views.profile, name="profile"),

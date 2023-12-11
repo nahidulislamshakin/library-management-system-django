@@ -1,5 +1,5 @@
 from library.forms import IssueBookForm
-from django.shortcuts import redirect, render,HttpResponse
+from django.shortcuts import redirect, render,HttpResponse, get_object_or_404
 from .models import *
 from .forms import IssueBookForm
 from django.contrib.auth import authenticate, login, logout
@@ -41,8 +41,14 @@ def issue_book(request):
         form = forms.IssueBookForm(request.POST)
         if form.is_valid():
             obj = models.IssuedBook()
-            obj.student_id = request.POST['name2']
+            user_id = int(request.POST['name2'])
+            user = User.objects.get(id = user_id)
+            student = Student.objects.get(user=user)
+
+            obj.student_id = student.id
             obj.isbn = request.POST['isbn2']
+
+
             obj.save()
             alert = True
             return render(request, "issue_book.html", {'obj':obj, 'alert':alert})
@@ -51,6 +57,7 @@ def issue_book(request):
 @login_required(login_url = '/admin_login')
 def view_issued_book(request):
     issuedBooks = IssuedBook.objects.all()
+    print(issuedBooks)
     details = []
     for i in issuedBooks:
         days = (date.today()-i.issued_date)
@@ -60,11 +67,11 @@ def view_issued_book(request):
             day=d-7
             fine=day*5
         books = list(models.Book.objects.filter(isbn=i.isbn))
-        students = list(models.Student.objects.filter(user=i.student_id))
+        students = list(models.Student.objects.filter(id=i.student_id))
         i=0
         
         for l in books:
-            t=(students[i].user,students[i].user_id,books[i].name,books[i].isbn,issuedBooks[0].issued_date,issuedBooks[0].expiry_date,fine)
+            t=(students[i].user,students[i].user_id,  books[i].name, books[i].isbn, issuedBooks[0].issued_date, issuedBooks[0].expiry_date, fine, issuedBooks[i].id )
             i=i+1
             details.append(t)
     return render(request, "view_issued_book.html", {'issuedBooks':issuedBooks, 'details':details})
@@ -118,13 +125,19 @@ def edit_profile(request):
     return render(request, "edit_profile.html")
 
 def delete_book(request, myid):
-    books = Book.objects.filter(id=myid)
+    books = get_object_or_404(Book, id=myid)
     books.delete()
-    return redirect("/view_issued_book")
+    return redirect("view_books")
 
 def delete_student(request, myid):
-    students = Student.objects.filter(id=myid)
-    students.delete()
+    student = get_object_or_404(Student, id=myid)
+    print(myid)
+    print(type(myid))
+    issue_books = IssuedBook.objects.filter(student_id = myid)
+    print(issue_books)
+    for issue_book in issue_books:
+        issue_book.delete()
+    student.delete()
     return redirect("/view_students")
 
 def change_password(request):
@@ -208,3 +221,9 @@ def admin_login(request):
 def Logout(request):
     logout(request)
     return redirect ("/")
+
+def delete_issue(request, pk):
+    issue_book = get_object_or_404(IssuedBook, id=pk)
+    issue_book.delete()
+
+    return redirect("view_issued_book")
