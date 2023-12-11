@@ -56,12 +56,13 @@ def view_issued_book(request):
         days = (date.today()-i.issued_date)
         d=days.days
         fine=0
-        if d>14:
-            day=d-14
+        if d>7:
+            day=d-7
             fine=day*5
         books = list(models.Book.objects.filter(isbn=i.isbn))
         students = list(models.Student.objects.filter(user=i.student_id))
         i=0
+        
         for l in books:
             t=(students[i].user,students[i].user_id,books[i].name,books[i].isbn,issuedBooks[0].issued_date,issuedBooks[0].expiry_date,fine)
             i=i+1
@@ -119,7 +120,7 @@ def edit_profile(request):
 def delete_book(request, myid):
     books = Book.objects.filter(id=myid)
     books.delete()
-    return redirect("/view_books")
+    return redirect("/view_issued_book")
 
 def delete_student(request, myid):
     students = Student.objects.filter(id=myid)
